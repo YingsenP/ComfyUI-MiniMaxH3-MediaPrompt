@@ -6,6 +6,10 @@ This plugin provides media prompt inputs for `MiniMaxH3ReferenceToVideo`.
 
 This plugin now registers two nodes only. The legacy MiniMax H3 loading and generation nodes are disabled.
 
+## Workflow Example
+
+![MiniMax H3 Media Prompt workflow connected to MiniMaxH3ReferenceToVideo](images/minimax-h3-media-prompt-workflow.png)
+
 ## Installation
 
 Clone the [YingsenP/ComfyUI-MiniMaxH3-MediaPrompt](https://github.com/YingsenP/ComfyUI-MiniMaxH3-MediaPrompt) repository into `ComfyUI/custom_nodes`, then restart ComfyUI:

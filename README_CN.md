@@ -6,6 +6,10 @@
 
 本插件现在只注册两个节点，旧版 MiniMax H3 加载与生成节点已停用。
 
+## 工作流示例
+
+![连接到 MiniMaxH3ReferenceToVideo 的 MiniMax H3 媒体提示词工作流](images/minimax-h3-media-prompt-workflow.png)
+
 ## 安装
 
 将 [YingsenP/ComfyUI-MiniMaxH3-MediaPrompt](https://github.com/YingsenP/ComfyUI-MiniMaxH3-MediaPrompt) 仓库克隆到 `ComfyUI/custom_nodes`，然后重启 ComfyUI：
