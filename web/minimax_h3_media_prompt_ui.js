@@ -3020,9 +3020,9 @@ function insertPlainText(editor, text) {
 function pastedMentionCandidates(node) {
     if (!isReferenceMode(node)) return [];
     const labels = {
-        image: ["图片", "Image", "image", "Picture", "picture"],
-        video: ["视频", "Video", "video"],
-        audio: ["音频", "Audio", "audio"],
+        image: ["Image", "image", "Picture", "picture"],
+        video: ["Video", "video"],
+        audio: ["Audio", "audio"],
     };
     const candidates = [];
     const seen = new Set();
