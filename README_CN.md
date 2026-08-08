@@ -2,7 +2,22 @@
 
 [English README](README.md)
 
+本插件为 `MiniMaxH3ReferenceToVideo` 提供媒体提示词输入。
+
 本插件现在只注册两个节点，旧版 MiniMax H3 加载与生成节点已停用。
+
+## 安装
+
+将 [YingsenP/ComfyUI-MiniMaxH3-MediaPrompt](https://github.com/YingsenP/ComfyUI-MiniMaxH3-MediaPrompt) 仓库克隆到 `ComfyUI/custom_nodes`，然后重启 ComfyUI：
+
+```bash
+cd ComfyUI/custom_nodes
+git clone https://github.com/YingsenP/ComfyUI-MiniMaxH3-MediaPrompt.git
+```
+
+## 必需依赖
+
+快速创建视频功能依赖 `Load Video (Upload)` 节点。使用此功能前，请先安装 [ComfyUI-VideoHelperSuite](https://github.com/kosinkadink/ComfyUI-VideoHelperSuite)。
 
 ## MiniMax H3 Media Prompt
 

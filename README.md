@@ -1,14 +1,29 @@
 # ComfyUI-MiniMaxH3-MediaPrompt
 
-[中文说明](README_CN.md)
+[涓枃璇存槑](README_CN.md)
+
+This plugin provides media prompt inputs for `MiniMaxH3ReferenceToVideo`.
 
 This plugin now registers two nodes only. The legacy MiniMax H3 loading and generation nodes are disabled.
+
+## Installation
+
+Clone the [YingsenP/ComfyUI-MiniMaxH3-MediaPrompt](https://github.com/YingsenP/ComfyUI-MiniMaxH3-MediaPrompt) repository into `ComfyUI/custom_nodes`, then restart ComfyUI:
+
+```bash
+cd ComfyUI/custom_nodes
+git clone https://github.com/YingsenP/ComfyUI-MiniMaxH3-MediaPrompt.git
+```
+
+## Required Dependency
+
+Video quick-create relies on the `Load Video (Upload)` node. Install [ComfyUI-VideoHelperSuite](https://github.com/kosinkadink/ComfyUI-VideoHelperSuite) before using this feature.
 
 ## MiniMax H3 Media Prompt
 
 - One `Media` input accepts images, videos, and audio clips.
 - Supports up to 9 images, 3 videos, and 3 standalone audio clips.
-- Video quick-create uses VideoHelperSuite's `Load Video (Upload)` node.
+- Video quick-create uses ComfyUI-VideoHelperSuite's `Load Video (Upload)` node.
 - The VHS `IMAGE` frames and `AUDIO` outputs are paired as the same-numbered video and soundtrack.
 - Do not connect the optional `VAE` input on the VHS loader; MiniMax reference videos require `IMAGE` frame batches, not `LATENT` values.
 - The text editor retains `@` media mentions and `#` dialogue blocks.
