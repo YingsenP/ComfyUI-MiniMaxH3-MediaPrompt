@@ -1,0 +1,16 @@
+[project]
+name = "comfyui-minimaxh3-media-prompt"
+description = "MiniMax H3 reference media and rich prompt transport nodes for ComfyUI."
+version = "1.0.3"
+license = { file = "LICENSE" }
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/YingsenP/ComfyUI-MiniMaxH3-MediaPrompt"
+Documentation = "https://github.com/YingsenP/ComfyUI-MiniMaxH3-MediaPrompt#readme"
+"Bug Tracker" = "https://github.com/YingsenP/ComfyUI-MiniMaxH3-MediaPrompt/issues"
+
+[tool.comfy]
+PublisherId = "YingsenP"
+DisplayName = "ComfyUI-MiniMaxH3-MediaPrompt"
+Icon = ""
