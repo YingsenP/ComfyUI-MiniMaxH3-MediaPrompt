@@ -2,50 +2,38 @@
 
 [English README](README.md)
 
-本插件为 `MiniMaxH3ReferenceToVideo` 提供媒体提示词输入。
+这是一个专为 `MiniMaxH3ReferenceToVideo` 创建的 ComfyUI 插件，用于更快速地添加和管理 MiniMax 提示词中的图片、视频、音频及台词引用。
 
-本插件现在只注册两个节点，旧版 MiniMax H3 加载与生成节点已停用。
+## 主要功能
 
-## 工作流示例
+- 动态添加引用图片、引用视频和引用音频，无需手动管理编号输入端口；
+- 在提示词编辑器中输入 `@`，即可选择任意已连接的素材；
+- 自动将素材引用转换为 MiniMax 所需的 `<Picture N>`、`<Video N>` 和 `<Audio N>` 格式；
+- 输入 `#` 创建可编辑的台词块，并自动转换为 MiniMax 所需的 `<d>...</d>` 格式；
+- 工作流执行后，可预览完成转换的最终提示词。
+
+## 使用方法
+
+1. 将图片、视频和音频加载节点添加或连接到 `Media` 输入端；
+2. 在提示词编辑器中输入 `@`，选择需要引用的素材；
+3. 需要台词时输入 `#` 创建台词块，然后在其中输入台词；
+4. 将 `MiniMax H3 Media Prompt Output` 连接到 `MiniMaxH3ReferenceToVideo`；
+5. 执行工作流，插件会将所有素材引用和台词块转换为 MiniMax 所需的格式。
 
 ![连接到 MiniMaxH3ReferenceToVideo 的 MiniMax H3 媒体提示词工作流](images/minimax-h3-media-prompt-workflow.png)
 
 ## 安装
 
-将 [YingsenP/ComfyUI-MiniMaxH3-MediaPrompt](https://github.com/YingsenP/ComfyUI-MiniMaxH3-MediaPrompt) 仓库克隆到 `ComfyUI/custom_nodes`，然后重启 ComfyUI：
+将仓库克隆到 `ComfyUI/custom_nodes`，然后重启 ComfyUI：
 
 ```bash
 cd ComfyUI/custom_nodes
 git clone https://github.com/YingsenP/ComfyUI-MiniMaxH3-MediaPrompt.git
 ```
 
-## 必需依赖
+## 视频依赖
 
-快速创建视频功能依赖 `Load Video (Upload)` 节点。使用此功能前，请先安装 [ComfyUI-VideoHelperSuite](https://github.com/kosinkadink/ComfyUI-VideoHelperSuite)。
+快速添加引用视频需要 [ComfyUI-VideoHelperSuite](https://github.com/kosinkadink/ComfyUI-VideoHelperSuite) 提供的 `Load Video (Upload)` 节点。使用视频引用前，请先安装该插件。
 
-## MiniMax H3 Media Prompt
-
-- 一个可接入图片、视频和音频的 `Media` 输入端；
-- 最多接入 9 张图片、3 个视频和 3 个独立音频；
-- 从 `Media` 端口快速创建视频时使用 VideoHelperSuite 的 `Load Video (Upload)`；
-- VHS 的 `IMAGE` 帧输出和 `AUDIO` 输出会自动作为同编号的视频与视频音轨配对；
-- 不要给 VHS 加载节点连接可选 `VAE`，MiniMax 参考视频需要 `IMAGE` 帧批次而不是 `LATENT`；
-- 文本编辑器保留 `@` 素材引用和 `#` 台词块功能；
-- `@` 引用在执行时转换为 `<Picture N>`、`<Video N>` 或 `<Audio N>`；
-- `#` 台词块在执行时转换为 `<d>...</d>`；
-- 输出一个 `MINIMAX_H3_MEDIA_PROMPT` 自定义类型。
-
-## MiniMax H3 Media Prompt Output
-
-接收 `MINIMAX_H3_MEDIA_PROMPT`，并按固定顺序输出：
-
-- `ref_image_0` 至 `ref_image_8`；
-- `ref_video_0` 至 `ref_video_2`（`IMAGE` 视频帧批次，与 VHS 加载器兼容）；
-- `ref_video_audio_0` 至 `ref_video_audio_2`；
-- `ref_audio_0` 至 `ref_audio_2`；
-- `text`。
-
-节点执行后会在只读预览区显示已经转换完成的最终提示词。
-
-没有连接的媒体输出为 `None`。视频音频从视频对象自带的音轨中提取。
+请勿连接 `Load Video (Upload)` 的可选 `VAE` 输入。MiniMax 引用视频需要 `IMAGE` 视频帧批次，而不是 `LATENT` 数据。
 
