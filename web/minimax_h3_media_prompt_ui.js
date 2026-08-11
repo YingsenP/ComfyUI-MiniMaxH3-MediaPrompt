@@ -21,6 +21,7 @@ const TEXT = {
     audio: ZH_BROWSER ? "\u97f3\u9891" : "Audio",
     loadImage: ZH_BROWSER ? "\u52a0\u8f7d\u56fe\u7247" : "Load image",
     loadVideo: ZH_BROWSER ? "\u52a0\u8f7d\u89c6\u9891" : "Load video",
+    loadVideoOnly: ZH_BROWSER ? "\u4ec5\u52a0\u8f7d\u89c6\u9891" : "Load video only",
     loadAudio: ZH_BROWSER ? "\u52a0\u8f7d\u97f3\u9891" : "Load audio",
     deleteLink: ZH_BROWSER ? "\u5220\u9664" : "Delete",
     promptPlaceholder: "Prompt...",
@@ -48,6 +49,7 @@ const LABELS = {
 const LOADERS = {
     image: { classType: "LoadImage", label: TEXT.loadImage },
     video: { classType: "VHS_LoadVideo", label: TEXT.loadVideo },
+    video_only: { classType: "VHS_LoadVideo", label: TEXT.loadVideoOnly },
     audio: { classType: "LoadAudio", label: TEXT.loadAudio },
 };
 
@@ -216,7 +218,7 @@ function normalizeLinks(node, removeMissing = true) {
         normalized.push({ ...link, source_id: sourceId, source_slot: sourceSlot, media_type: mediaType });
     }
     const videoSourceIds = new Set(
-        normalized.filter((link) => link.media_type === "video").map((link) => link.source_id)
+        normalized.filter((link) => link.media_type === "video" && link.include_audio !== false).map((link) => link.source_id)
     );
     for (let index = normalized.length - 1; index >= 0; index -= 1) {
         const link = normalized[index];
@@ -225,7 +227,7 @@ function normalizeLinks(node, removeMissing = true) {
         normalized.splice(index, 1);
     }
     for (const link of [...normalized]) {
-        if (link.media_type !== "video") continue;
+        if (link.media_type !== "video" || link.include_audio === false) continue;
         const source = app.graph?.getNodeById?.(link.source_id);
         const audioSlot = source?.outputs?.findIndex((output) => getMediaType(getSlotType(output), source) === "video_audio") ?? -1;
         if (audioSlot < 0) continue;
@@ -400,7 +402,7 @@ function clearConnecting(canvas) {
     canvas.connecting_input = null;
 }
 
-function addVirtualLink(targetNode, sourceNode, sourceSlot, sourceType, mediaType = null) {
+function addVirtualLink(targetNode, sourceNode, sourceSlot, sourceType, mediaType = null, properties = {}) {
     if (!targetNode || !sourceNode || isSameNode(targetNode, sourceNode)) return false;
     const sourceId = Number(sourceNode.id);
     if (!Number.isFinite(sourceId)) return false;
@@ -415,6 +417,7 @@ function addVirtualLink(targetNode, sourceNode, sourceSlot, sourceType, mediaTyp
         source_type: sourceType || "*",
         media_type: mediaType,
         order: links.length + 1,
+        ...properties,
     });
     resequence(targetNode);
     targetNode.setDirtyCanvas?.(true, true);
@@ -624,7 +627,8 @@ function openCreateMenu(canvas, targetNode, event, allowedTypes) {
         setNativeSearchVisualSuppression(false);
         clearTemporaryRenderLink(canvas);
     };
-    const items = allowedTypes.filter((type) => canAccept(targetNode, type)).map((type) => ({
+    const menuTypes = allowedTypes.flatMap((type) => type === "video" ? ["video", "video_only"] : [type]);
+    const items = menuTypes.filter((type) => canAccept(targetNode, type === "video_only" ? "video" : type)).map((type) => ({
         content: LOADERS[type].label,
         callback: () => {
             createResourceNode(canvas, targetNode, type, [x, y]);
@@ -663,6 +667,7 @@ function alignNodeOutputToDrop(node, slot, position) {
 
 function createResourceNode(canvas, targetNode, mediaType, position) {
     const spec = LOADERS[mediaType];
+    const linkMediaType = mediaType === "video_only" ? "video" : mediaType;
     const graph = canvas?.graph || app.graph;
     const LiteGraph = globalThis.LiteGraph;
     if (!spec || !graph || !LiteGraph?.createNode) return false;
@@ -670,7 +675,7 @@ function createResourceNode(canvas, targetNode, mediaType, position) {
     if (!node) return false;
     node.pos = [position[0], position[1]];
     graph.add(node);
-    const slot = node.outputs?.findIndex((output) => getMediaType(getSlotType(output), node) === mediaType) ?? 0;
+    const slot = node.outputs?.findIndex((output) => getMediaType(getSlotType(output), node) === linkMediaType) ?? 0;
     alignNodeOutputToDrop(node, slot, position);
     if (isVueNodesMode() && typeof requestAnimationFrame === "function") {
         const placedPosition = [Number(node.pos?.[0]) || 0, Number(node.pos?.[1]) || 0];
@@ -681,7 +686,14 @@ function createResourceNode(canvas, targetNode, mediaType, position) {
         });
     }
     const output = node.outputs?.[slot] || {};
-    addVirtualLink(targetNode, node, slot, getSlotType(output) || mediaType.toUpperCase(), mediaType);
+    addVirtualLink(
+        targetNode,
+        node,
+        slot,
+        getSlotType(output) || linkMediaType.toUpperCase(),
+        linkMediaType,
+        mediaType === "video_only" ? { include_audio: false } : {},
+    );
     if (mediaType === "video") {
         const audioSlot = node.outputs?.findIndex((candidate) => getMediaType(getSlotType(candidate), node) === "video_audio") ?? -1;
         if (audioSlot >= 0) {
@@ -1228,7 +1240,7 @@ function patchGraphToPrompt() {
             const availableLinks = normalizeLinks(node).filter((link) => Boolean(output[String(link.source_id)]));
             const images = availableLinks.filter((link) => link.media_type === "image");
             const videos = availableLinks.filter((link) => link.media_type === "video");
-            const videoAudios = videos.map((video) => availableLinks.find((link) =>
+            const videoAudios = videos.filter((video) => video.include_audio !== false).map((video) => availableLinks.find((link) =>
                 link.media_type === "video_audio" && link.source_id === video.source_id
             )).filter(Boolean);
             const audios = availableLinks.filter((link) => link.media_type === "audio");

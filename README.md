@@ -7,6 +7,7 @@ A ComfyUI plugin created for `MiniMaxH3ReferenceToVideo`. It makes MiniMax image
 ## Features
 
 - Dynamically add reference images, videos, and audio without manually managing numbered inputs.
+- Choose `Load video` to connect both video and audio, or `Load video only` to omit the soundtrack.
 - Type `@` in the prompt editor to select any connected media.
 - Automatically convert media mentions into the MiniMax prompt syntax: `<Picture N>`, `<Video N>`, and `<Audio N>`.
 - Type `#` to create an editable dialogue block, which is converted into `<d>...</d>` for MiniMax.
