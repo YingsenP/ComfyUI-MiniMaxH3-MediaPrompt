@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import sqrt
 from typing import Any
 
 
@@ -13,6 +14,33 @@ MAX_VIDEO_AUDIOS = MAX_VIDEOS
 MAX_MEDIA = MAX_IMAGES + MAX_VIDEOS + MAX_VIDEO_AUDIOS + MAX_AUDIOS
 MEDIA_TYPES = ("image", "video", "video_audio", "audio")
 CUSTOM_TYPE = "MINIMAX_H3_MEDIA_PROMPT"
+DEFAULT_VIDEO_FRAME_RATE = 24
+ASPECT_RATIOS = {
+    "1:1 (Square)": (1, 1),
+    "2:3 (Portrait Photo)": (2, 3),
+    "3:2 (Photo)": (3, 2),
+    "3:4 (Portrait Standard)": (3, 4),
+    "4:3 (Standard)": (4, 3),
+    "9:16 (Portrait Widescreen)": (9, 16),
+    "16:9 (Widescreen)": (16, 9),
+    "21:9 (Ultrawide)": (21, 9),
+}
+RESOLUTIONS = {
+    "360P": (608, 352),
+    "416P": (736, 416),
+    "480P": (864, 480),
+    "540P": (960, 544),
+    "608P": (1056, 608),
+    "640P": (1152, 640),
+    "672P": (1216, 672),
+    "720P": (1280, 736),
+    "768P (1344x768)": (1344, 768),
+    "768P (1376x768)": (1376, 768),
+    "832P": (1504, 832),
+    "928P": (1664, 928),
+    "1024P": (1824, 1024),
+    "1080P": (1920, 1088),
+}
 
 
 @dataclass(frozen=True)
@@ -144,12 +172,91 @@ class MiniMaxH3MediaPromptOutput:
         return {"ui": {"text": (media_prompt.text,)}, "result": result}
 
 
+def _dimensions(aspect_ratio: str, resolution: str) -> tuple[int, int]:
+    base_width, base_height = RESOLUTIONS[resolution]
+    aspect_width, aspect_height = ASPECT_RATIOS[aspect_ratio]
+    if (aspect_width, aspect_height) == (16, 9):
+        return base_width, base_height
+
+    target_pixels = base_width * base_height
+    ratio = aspect_width / aspect_height
+    width = round(sqrt(target_pixels * ratio) / 32) * 32
+    height = round(sqrt(target_pixels / ratio) / 32) * 32
+    return width, height
+
+
+def _video_frame_length(video_length: int, frame_rate: int) -> int:
+    frame_length = max(5, round(video_length * frame_rate))
+    return frame_length + (5 - (frame_length % 17)) % 17
+
+
+class MiniMaxH3VideoSettings:
+    CATEGORY = "MiniMax H3/Video"
+    FUNCTION = "build"
+    RETURN_TYPES = ("INT", "INT", "INT", "INT", "INT", "INT", "INT", "FLOAT", "FLOAT")
+    RETURN_NAMES = (
+        "video_length",
+        "first_width",
+        "first_height",
+        "second_width",
+        "second_height",
+        "first_steps",
+        "second_steps",
+        "lora_strength",
+        "frame_rate",
+    )
+    DESCRIPTION = "Build two-stage video dimensions and sampling settings."
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "video_length": ("INT", {"default": 10, "min": 1, "max": 10000, "step": 1}),
+                "aspect_ratio": (tuple(ASPECT_RATIOS), {"default": "16:9 (Widescreen)"}),
+                "first_resolution": (tuple(RESOLUTIONS), {"default": "480P"}),
+                "second_resolution": (tuple(RESOLUTIONS), {"default": "720P"}),
+                "first_steps": ("INT", {"default": 6, "min": 1, "max": 10000, "step": 1}),
+                "second_steps": ("INT", {"default": 2, "min": 1, "max": 10000, "step": 1}),
+                "lora_strength": ("FLOAT", {"default": 0.75, "min": -10.0, "max": 10.0, "step": 0.01}),
+                "frame_rate": ("INT", {"default": DEFAULT_VIDEO_FRAME_RATE, "min": 1, "max": 240, "step": 1}),
+            }
+        }
+
+    @staticmethod
+    def build(
+        video_length: int,
+        aspect_ratio: str,
+        first_resolution: str,
+        second_resolution: str,
+        first_steps: int,
+        second_steps: int,
+        lora_strength: float,
+        frame_rate: int,
+    ):
+        output_video_length = _video_frame_length(video_length, frame_rate)
+        first_width, first_height = _dimensions(aspect_ratio, first_resolution)
+        second_width, second_height = _dimensions(aspect_ratio, second_resolution)
+        return (
+            output_video_length,
+            first_width,
+            first_height,
+            second_width,
+            second_height,
+            first_steps,
+            second_steps,
+            lora_strength,
+            float(frame_rate),
+        )
+
+
 NODE_CLASS_MAPPINGS = {
     "MiniMaxH3MediaPrompt": MiniMaxH3MediaPrompt,
     "MiniMaxH3MediaPromptOutput": MiniMaxH3MediaPromptOutput,
+    "MiniMaxH3VideoSettings": MiniMaxH3VideoSettings,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "MiniMaxH3MediaPrompt": "MiniMax H3 Media Prompt",
     "MiniMaxH3MediaPromptOutput": "MiniMax H3 Media Prompt Output",
+    "MiniMaxH3VideoSettings": "MiniMax H3 Video Settings",
 }

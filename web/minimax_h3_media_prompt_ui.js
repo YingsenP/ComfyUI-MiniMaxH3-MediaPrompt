@@ -2,6 +2,7 @@ import { app } from "../../scripts/app.js";
 
 const NODE_CLASS = "MiniMaxH3MediaPrompt";
 const OUTPUT_CLASS = "MiniMaxH3MediaPromptOutput";
+const SETTINGS_CLASS = "MiniMaxH3VideoSettings";
 const LINKS_PROP = "minimax_h3_media_prompt_links";
 const PROMPT_DOC_PROP = "minimax_h3_media_prompt_document";
 const OUTPUT_PREVIEW_PROP = "minimax_h3_media_prompt_preview";
@@ -30,7 +31,9 @@ const TEXT = {
     previewEmpty: ZH_BROWSER ? "\u6267\u884c\u5de5\u4f5c\u6d41\u540e\u663e\u793a\u6700\u7ec8\u63d0\u793a\u8bcd" : "Run the workflow to preview the final prompt",
     mainTitle: ZH_BROWSER ? "MiniMax H3 \u5a92\u4f53\u63d0\u793a\u8bcd" : "MiniMax H3 Media Prompt",
     outputTitle: ZH_BROWSER ? "MiniMax H3 \u5a92\u4f53\u63d0\u793a\u8bcd\u8f93\u51fa" : "MiniMax H3 Media Prompt Output",
+    settingsTitle: ZH_BROWSER ? "MiniMax H3 \u89c6\u9891\u8bbe\u7f6e" : "MiniMax H3 Video Settings",
     category: ZH_BROWSER ? "MiniMax H3/\u5a92\u4f53\u63d0\u793a\u8bcd" : "MiniMax H3/Media Prompt",
+    videoCategory: ZH_BROWSER ? "MiniMax H3/\u89c6\u9891" : "MiniMax H3/Video",
     prompt: ZH_BROWSER ? "\u63d0\u793a\u8bcd" : "Prompt",
     inputMedia: "Media",
 };
@@ -83,6 +86,42 @@ function setLocalizedSlotLabel(slot, label) {
 
 function localizeNodeInstance(node) {
     if (!node) return;
+    if (String(node?.comfyClass || node?.type || node?.constructor?.nodeData?.name || "") === SETTINGS_CLASS) {
+        node.title = TEXT.settingsTitle;
+        const labels = ZH_BROWSER
+            ? {
+                video_length: "\u89c6\u9891\u65f6\u957f\uff08\u79d2\uff09",
+                aspect_ratio: "\u753b\u5e45",
+                first_resolution: "\u4e00\u91c7\u5206\u8fa8\u7387",
+                second_resolution: "\u4e8c\u91c7\u5206\u8fa8\u7387",
+                first_steps: "\u4e00\u91c7\u6b65\u6570",
+                second_steps: "\u4e8c\u91c7\u6b65\u6570",
+                lora_strength: "LoRA \u5f3a\u5ea6",
+                frame_rate: "\u5e27\u7387\uff08\u6574\u6570\uff09",
+            }
+            : {
+                video_length: "Duration (seconds)",
+                aspect_ratio: "Aspect ratio",
+                first_resolution: "First resolution",
+                second_resolution: "Second resolution",
+                first_steps: "First steps",
+                second_steps: "Second steps",
+                lora_strength: "LoRA strength",
+                frame_rate: "Frame rate (integer)",
+            };
+        for (const widget of node.widgets || []) {
+            if (labels[widget.name]) widget.label = labels[widget.name];
+        }
+        for (const output of node.outputs || []) {
+            const outputLabel = output.name === "video_length"
+                ? (ZH_BROWSER ? "\u89c6\u9891\u5e27\u6570" : "Frame length")
+                : output.name === "frame_rate"
+                    ? (ZH_BROWSER ? "\u5e27\u7387\uff08FLOAT\uff09" : "Frame rate (FLOAT)")
+                    : labels[output.name];
+            if (outputLabel) setLocalizedSlotLabel(output, outputLabel);
+        }
+        return;
+    }
     if (isOutput(node)) {
         node.title = TEXT.outputTitle;
         for (const input of node.inputs || []) {
@@ -102,9 +141,11 @@ function localizeNodeInstance(node) {
 }
 
 function localizeNodeDefinition(nodeData) {
-    if (!nodeData || ![NODE_CLASS, OUTPUT_CLASS].includes(nodeData.name)) return;
-    nodeData.display_name = nodeData.name === OUTPUT_CLASS ? TEXT.outputTitle : TEXT.mainTitle;
-    nodeData.category = TEXT.category;
+    if (!nodeData || ![NODE_CLASS, OUTPUT_CLASS, SETTINGS_CLASS].includes(nodeData.name)) return;
+    nodeData.display_name = nodeData.name === OUTPUT_CLASS
+        ? TEXT.outputTitle
+        : nodeData.name === SETTINGS_CLASS ? TEXT.settingsTitle : TEXT.mainTitle;
+    nodeData.category = nodeData.name === SETTINGS_CLASS ? TEXT.videoCategory : TEXT.category;
 }
 
 function getWidget(node, name) {
@@ -3568,6 +3609,32 @@ function installOutputNode(nodeType, nodeData) {
     };
 }
 
+function installSettingsNode(nodeType, nodeData) {
+    if (nodeData?.name !== SETTINGS_CLASS) return;
+    const originalCreated = nodeType.prototype.onNodeCreated;
+    nodeType.prototype.onNodeCreated = function onNodeCreatedH3VideoSettings() {
+        const result = originalCreated?.apply(this, arguments);
+        localizeNodeInstance(this);
+        return result;
+    };
+    const originalConfigure = nodeType.prototype.onConfigure;
+    nodeType.prototype.onConfigure = function onConfigureH3VideoSettings(info) {
+        const values = info?.widgets_values;
+        if (
+            Array.isArray(values)
+            && values.length >= 8
+            && typeof values[1] === "number"
+            && /^\d+:\d+\s*\(/.test(String(values[2] || ""))
+        ) {
+            const [videoLength, frameRate, aspectRatio, firstResolution, secondResolution, firstSteps, secondSteps, loraStrength, ...rest] = values;
+            info.widgets_values = [videoLength, aspectRatio, firstResolution, secondResolution, firstSteps, secondSteps, loraStrength, frameRate, ...rest];
+        }
+        const result = originalConfigure?.apply(this, arguments);
+        localizeNodeInstance(this);
+        return result;
+    };
+}
+
 function install() {
     if (installed) return;
     installed = true;
@@ -3675,6 +3742,7 @@ app.registerExtension({
         localizeNodeDefinition(nodeData);
         installMediaSourceNode(nodeType, nodeData);
         installOutputNode(nodeType, nodeData);
+        installSettingsNode(nodeType, nodeData);
         installNode(nodeType, nodeData);
     },
 });
