@@ -9,14 +9,14 @@ A ComfyUI plugin created for `MiniMaxH3ReferenceToVideo`. It makes MiniMax image
 - Dynamically add reference images, videos, and audio without manually managing numbered inputs.
 - Type `@` in the prompt editor to select any connected media.
 - Automatically convert media mentions into the MiniMax prompt syntax: `<Picture N>`, `<Video N>`, and `<Audio N>`.
-- Type `#` to create an editable dialogue block, which is converted into `<d>...</d>` for MiniMax.
+- Type `#` to create an editable dialogue block. When pasting external text, paired `#dialogue#` markers are converted into dialogue blocks.
 - Preview the final converted prompt after running the workflow.
 
 ## Workflow
 
 1. Add or connect image, video, and audio loader nodes to the `Media` input.
 2. Type `@` in the prompt editor and select the media you want to reference.
-3. Type `#` when you need a dialogue block, then enter the dialogue inside it.
+3. Type `#` when you need a dialogue block, then enter the dialogue inside it, or paste external dialogue as `#dialogue#`.
 4. Connect `MiniMax H3 Media Prompt Output` to `MiniMaxH3ReferenceToVideo`.
 5. Run the workflow. The plugin converts all media mentions and dialogue blocks into the syntax required by MiniMax.
 
