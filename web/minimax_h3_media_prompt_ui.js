@@ -3131,16 +3131,6 @@ function appendPastedText(fragment, text) {
     return last;
 }
 
-function pastedDialogueMatch(value, cursor) {
-    if (value[cursor] !== "#") return null;
-    const closing = value.indexOf("#", cursor + 1);
-    if (closing <= cursor + 1) return null;
-    return {
-        raw: value.slice(cursor, closing + 1),
-        text: value.slice(cursor + 1, closing),
-    };
-}
-
 function insertTextWithMentionChips(node, editor, text) {
     const selection = window.getSelection?.();
     if (!selection || !selection.rangeCount || !editor.contains(selection.anchorNode)) return false;
@@ -3153,8 +3143,7 @@ function insertTextWithMentionChips(node, editor, text) {
     let plainStart = 0;
     let cursor = 0;
     while (cursor < value.length) {
-        const dialogue = pastedDialogueMatch(value, cursor);
-        const match = dialogue || pastedOfficialMediaTagMatch(node, value, cursor)
+        const match = pastedOfficialMediaTagMatch(node, value, cursor)
             || candidates.find((candidate) => value.slice(cursor, cursor + candidate.raw.length).toLocaleLowerCase() === candidate.raw.toLocaleLowerCase());
         if (!match) {
             cursor += 1;
@@ -3162,7 +3151,7 @@ function insertTextWithMentionChips(node, editor, text) {
         }
         if (plainStart < cursor) appendPastedText(fragment, value.slice(plainStart, cursor));
         fragment.append(document.createTextNode(CARET_SENTINEL));
-        fragment.append(dialogue ? makeDialogueBlock(dialogue.text) : makeMentionChip(match.option));
+        fragment.append(makeMentionChip(match.option));
         fragment.append(document.createTextNode(CARET_SENTINEL));
         cursor += match.raw.length;
         plainStart = cursor;
