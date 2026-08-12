@@ -3132,8 +3132,18 @@ function appendPastedText(fragment, text) {
 }
 
 function pastedDialogueMatch(value, cursor) {
-    if (value[cursor] !== "#") return null;
-    const end = value.indexOf("#", cursor + 1);
+    const closingQuotes = {
+        "\"": ["\""],
+        "\uff02": ["\uff02"],
+        "\u201c": ["\u201d", "\u201c"],
+        "\u201d": ["\u201d", "\u201c"],
+    }[value[cursor]];
+    if (!closingQuotes) return null;
+    let end = -1;
+    for (const quote of closingQuotes) {
+        const index = value.indexOf(quote, cursor + 1);
+        if (index >= 0 && (end < 0 || index < end)) end = index;
+    }
     if (end <= cursor + 1) return null;
     return { raw: value.slice(cursor, end + 1), text: value.slice(cursor + 1, end) };
 }
