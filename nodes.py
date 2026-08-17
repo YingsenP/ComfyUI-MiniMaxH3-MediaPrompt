@@ -26,20 +26,14 @@ ASPECT_RATIOS = {
     "21:9 (Ultrawide)": (21, 9),
 }
 RESOLUTIONS = {
-    "360P": (608, 352),
-    "416P": (736, 416),
-    "480P": (864, 480),
-    "540P": (960, 544),
-    "608P": (1056, 608),
-    "640P": (1152, 640),
-    "672P": (1216, 672),
-    "720P": (1280, 736),
-    "768P (1344x768)": (1344, 768),
-    "768P (1376x768)": (1376, 768),
-    "832P": (1504, 832),
-    "928P": (1664, 928),
-    "1024P": (1824, 1024),
-    "1080P": (1920, 1088),
+    "0.2 (360P)": (608, 352),
+    "0.3 (416P)": (736, 416),
+    "0.4 (480P)": (864, 480),
+    "0.5 (540P)": (960, 544),
+    "0.6 (608P)": (1056, 608),
+    "0.7 (640P)": (1152, 640),
+    "0.8 (672P)": (1216, 672),
+    "0.9 (720P)": (1280, 736),
 }
 
 
@@ -193,15 +187,14 @@ def _video_frame_length(video_length: int, frame_rate: int) -> int:
 class MiniMaxH3VideoSettings:
     CATEGORY = "MiniMax H3/Video"
     FUNCTION = "build"
-    RETURN_TYPES = ("INT", "INT", "INT", "INT", "INT", "INT", "INT", "FLOAT", "FLOAT")
+    RETURN_TYPES = ("INT", "INT", "INT", "INT", "INT", "FLOAT", "FLOAT", "FLOAT")
     RETURN_NAMES = (
         "video_length",
         "first_width",
         "first_height",
-        "second_width",
-        "second_height",
-        "first_steps",
-        "second_steps",
+        "total_steps",
+        "separate_steps",
+        "upscale_factor",
         "lora_strength",
         "frame_rate",
     )
@@ -213,11 +206,11 @@ class MiniMaxH3VideoSettings:
             "required": {
                 "video_length": ("INT", {"default": 10, "min": 1, "max": 10000, "step": 1}),
                 "aspect_ratio": (tuple(ASPECT_RATIOS), {"default": "16:9 (Widescreen)"}),
-                "first_resolution": (tuple(RESOLUTIONS), {"default": "480P"}),
-                "second_resolution": (tuple(RESOLUTIONS), {"default": "720P"}),
-                "first_steps": ("INT", {"default": 6, "min": 1, "max": 10000, "step": 1}),
-                "second_steps": ("INT", {"default": 2, "min": 1, "max": 10000, "step": 1}),
-                "lora_strength": ("FLOAT", {"default": 0.75, "min": -10.0, "max": 10.0, "step": 0.01}),
+                "first_resolution": (tuple(RESOLUTIONS), {"default": "0.5 (540P)"}),
+                "total_steps": ("INT", {"default": 8, "min": 1, "max": 10000, "step": 1}),
+                "separate_steps": ("INT", {"default": 2, "min": 1, "max": 10000, "step": 1}),
+                "upscale_factor": ("FLOAT", {"default": 1.4, "min": 0.01, "max": 100.0, "step": 0.01}),
+                "lora_strength": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
                 "frame_rate": ("INT", {"default": DEFAULT_VIDEO_FRAME_RATE, "min": 1, "max": 240, "step": 1}),
             }
         }
@@ -227,23 +220,21 @@ class MiniMaxH3VideoSettings:
         video_length: int,
         aspect_ratio: str,
         first_resolution: str,
-        second_resolution: str,
-        first_steps: int,
-        second_steps: int,
+        total_steps: int,
+        separate_steps: int,
+        upscale_factor: float,
         lora_strength: float,
         frame_rate: int,
     ):
         output_video_length = _video_frame_length(video_length, frame_rate)
         first_width, first_height = _dimensions(aspect_ratio, first_resolution)
-        second_width, second_height = _dimensions(aspect_ratio, second_resolution)
         return (
             output_video_length,
             first_width,
             first_height,
-            second_width,
-            second_height,
-            first_steps,
-            second_steps,
+            total_steps,
+            separate_steps,
+            upscale_factor,
             lora_strength,
             float(frame_rate),
         )

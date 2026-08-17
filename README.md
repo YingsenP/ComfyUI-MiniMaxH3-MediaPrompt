@@ -29,29 +29,24 @@ The `MiniMax H3 Video Settings` node keeps the two-stage video generation parame
 - Video duration in seconds: defaults to `10`.
 - Frame rate: integer input; defaults to `24`.
 - Aspect ratio: supports `1:1`, `2:3`, `3:2`, `3:4`, `4:3`, `9:16`, `16:9`, and `21:9`; defaults to `16:9`.
-- First resolution: supports all 14 presets below; defaults to `480P`.
-- Second resolution: supports all 14 presets below; defaults to `720P`.
-- First/second steps: default to `6` and `2` respectively.
-- LoRA strength: defaults to `0.75`.
+- Base resolution: supports all 8 presets below; defaults to `0.5 (540P)`.
+- Total steps: defaults to `8`.
+- Separate steps: defaults to `2`.
+- Upscale factor: float input; defaults to `1.4`.
+- LoRA strength: defaults to `1.00`.
 
-The node outputs the video frame length, width and height for both stages, both step counts, the LoRA strength, and the frame rate as a `FLOAT`. Frame length is calculated as `max(5, round(a * fps)) + (5 - (max(5, round(a * fps)) % 17)) % 17`, where `a` is the input duration in seconds and `fps` is the integer frame-rate input. The defaults of `10` seconds and `24 FPS` output `243` frames and a frame-rate value of `24.0`. Dimensions are calculated from the selected aspect ratio and target pixel count, then aligned to multiples of `32`. At the default `16:9` aspect, the first stage is `864 x 480` and the second stage is `1280 x 736`.
+The node outputs the video frame length, base width and height, total steps, separate steps, the upscale factor, LoRA strength, and the frame rate as a `FLOAT`. Frame length is calculated as `max(5, round(a * fps)) + (5 - (max(5, round(a * fps)) % 17)) % 17`, where `a` is the input duration in seconds and `fps` is the integer frame-rate input. The defaults of `10` seconds and `24 FPS` output `243` frames and a frame-rate value of `24.0`. Dimensions are calculated from the selected aspect ratio and target pixel count, then aligned to multiples of `32`. At the default `16:9` aspect and `0.5 (540P)` base resolution, the output is `960 x 544`.
 
 | Resolution preset | 16:9 base output |
 |---|---|
-| 360P | 608 x 352 |
-| 416P | 736 x 416 |
-| 480P | 864 x 480 |
-| 540P | 960 x 544 |
-| 608P | 1056 x 608 |
-| 640P | 1152 x 640 |
-| 672P | 1216 x 672 |
-| 720P | 1280 x 736 |
-| 768P (1344x768) | 1344 x 768 |
-| 768P (1376x768) | 1376 x 768 |
-| 832P | 1504 x 832 |
-| 928P | 1664 x 928 |
-| 1024P | 1824 x 1024 |
-| 1080P | 1920 x 1088 |
+| 0.2 (360P) | 608 x 352 |
+| 0.3 (416P) | 736 x 416 |
+| 0.4 (480P) | 864 x 480 |
+| 0.5 (540P) | 960 x 544 |
+| 0.6 (608P) | 1056 x 608 |
+| 0.7 (640P) | 1152 x 640 |
+| 0.8 (672P) | 1216 x 672 |
+| 0.9 (720P) | 1280 x 736 |
 
 ## Installation
 

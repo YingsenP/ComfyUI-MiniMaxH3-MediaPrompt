@@ -92,20 +92,20 @@ function localizeNodeInstance(node) {
             ? {
                 video_length: "\u89c6\u9891\u65f6\u957f\uff08\u79d2\uff09",
                 aspect_ratio: "\u753b\u5e45",
-                first_resolution: "\u4e00\u91c7\u5206\u8fa8\u7387",
-                second_resolution: "\u4e8c\u91c7\u5206\u8fa8\u7387",
-                first_steps: "\u4e00\u91c7\u6b65\u6570",
-                second_steps: "\u4e8c\u91c7\u6b65\u6570",
+                first_resolution: "\u57fa\u7840\u5206\u8fa8\u7387",
+                total_steps: "\u603b\u6b65\u6570",
+                separate_steps: "\u5206\u79bb\u6b65\u6570",
+                upscale_factor: "\u653e\u5927\u500d\u6570",
                 lora_strength: "LoRA \u5f3a\u5ea6",
                 frame_rate: "\u5e27\u7387\uff08\u6574\u6570\uff09",
             }
             : {
                 video_length: "Duration (seconds)",
                 aspect_ratio: "Aspect ratio",
-                first_resolution: "First resolution",
-                second_resolution: "Second resolution",
-                first_steps: "First steps",
-                second_steps: "Second steps",
+                first_resolution: "Base resolution",
+                total_steps: "Total steps",
+                separate_steps: "Separate steps",
+                upscale_factor: "Upscale factor",
                 lora_strength: "LoRA strength",
                 frame_rate: "Frame rate (integer)",
             };
